@@ -106,17 +106,24 @@ class SimpleDocumentProcessor:
         else:
             content = self.download_document(source)
             
-            if source.lower().endswith('.pdf'):
+            # Extract file extension from URL (handle query parameters)
+            url_path = source.split('?')[0]  # Remove query parameters
+            
+            if url_path.lower().endswith('.pdf') or 'pdf' in source.lower():
                 return self.extract_text_from_pdf(content)
-            elif source.lower().endswith(('.docx', '.doc')):
+            elif url_path.lower().endswith(('.docx', '.doc')) or 'docx' in source.lower() or 'doc' in source.lower():
                 return self.extract_text_from_docx(content)
-            elif source.lower().endswith('.txt'):
+            elif url_path.lower().endswith('.txt') or 'txt' in source.lower():
                 return self.extract_text_from_txt(content)
             else:
-                try:
-                    return content.decode('utf-8')
-                except:
-                    raise Exception("Unsupported document format")
+                # Try to detect format from content or assume PDF for Azure blob URLs
+                if b'%PDF' in content[:100] or 'blob.core.windows.net' in source:
+                    return self.extract_text_from_pdf(content)
+                else:
+                    try:
+                        return content.decode('utf-8')
+                    except:
+                        raise Exception("Unsupported document format")
     
     def chunk_text(self, text: str, chunk_size: int = 1500, overlap: int = 300) -> List[Dict]:
         """Split text into chunks with metadata"""

@@ -235,6 +235,64 @@ async def upload_file(
             "error": str(e)
         }
 
+@app.post("/documents/upload-url")
+async def upload_url(
+    request: dict,
+    token: str = Depends(verify_token)
+):
+    """🔗 Upload and process document from URL"""
+    try:
+        url = request.get("url")
+        title = request.get("title", "")
+        
+        if not url:
+            raise HTTPException(status_code=400, detail="URL is required")
+        
+        # Check if already processed
+        if url in documents_storage:
+            return {
+                "success": True,
+                "message": "Document already processed",
+                "document_id": documents_storage[url]["document_id"],
+                "chunks": documents_storage[url]["chunks"]
+            }
+        
+        # Process document from URL
+        result = doc_processor.process_document(
+            source=url,
+            is_file_path=False
+        )
+        
+        if not result["success"]:
+            return {
+                "success": False,
+                "message": "Document processing failed",
+                "error": result["error"]
+            }
+        
+        # Store in memory
+        documents_storage[url] = {
+            "title": title or f"Document from URL",
+            "content": result["text"][:5000],
+            "chunks": result["chunks"],
+            "document_id": result["document_id"],
+            "url": url
+        }
+        
+        return {
+            "success": True,
+            "message": "Document processed successfully from URL",
+            "document_id": result["document_id"],
+            "chunks": result["chunks"]
+        }
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": "URL upload failed",
+            "error": str(e)
+        }
+
 @app.post("/query")
 async def query_document(
     request: dict,
@@ -334,6 +392,63 @@ async def get_stats(token: str = Depends(verify_token)):
         "ai_models": ["Gemini-2.0-Flash-Exp", "Simple-Text-Similarity"],
         "compliance": "HackRx 6.0 Ready"
     }
+
+@app.post("/test-upload")
+async def test_upload():
+    """Test endpoint to verify system functionality without external URLs"""
+    test_text = """
+    This is a sample policy document for testing purposes.
+    
+    Section 1: Benefits Overview
+    Our company provides comprehensive benefits including:
+    - Health insurance coverage with 90% coverage for in-network providers
+    - Dental and vision benefits for employees and dependents  
+    - Retirement savings plan with 6% company matching
+    - Paid time off starting at 15 days annually
+    
+    Section 2: Eligibility Requirements
+    All full-time employees are eligible for benefits after 90 days of employment.
+    Part-time employees working 20+ hours per week are eligible for prorated benefits.
+    Contract workers are not eligible for company benefits.
+    
+    Section 3: Medical Coverage Details
+    The medical plan covers preventive care at 100%, emergency services, and prescription drugs.
+    Employees can choose from three plan options during annual open enrollment period.
+    Grace period for premium payments is 30 days from due date.
+    """
+    
+    try:
+        # Create test document ID and process
+        document_id = "test_doc_sample_123"
+        chunks = doc_processor.chunk_text(test_text)
+        doc_processor.document_chunks[document_id] = chunks
+        
+        # Store in memory
+        documents_storage["test_document_url"] = {
+            "title": "Sample Policy Document for Testing",
+            "content": test_text[:500],
+            "chunks": len(chunks),
+            "document_id": document_id,
+            "url": "test_document_url"
+        }
+        
+        return {
+            "success": True,
+            "message": "Test document processed successfully",
+            "document_id": document_id,
+            "chunks": len(chunks),
+            "sample_queries": [
+                "What is the grace period for premium payments?",
+                "What are the main benefits offered?",
+                "Who is eligible for benefits?",
+                "What does the medical plan cover?"
+            ]
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 @app.get("/demo")
 async def demo_endpoint():
