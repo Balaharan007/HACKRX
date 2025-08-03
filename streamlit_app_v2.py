@@ -179,6 +179,48 @@ def hackrx_api_test():
     st.header("🧪 HackRx API Test")
     st.markdown("Test the main `/hackrx/run` endpoint with the official sample data")
     
+    # Demo mode option
+    with st.expander("🚀 Demo Mode (Recommended)", expanded=True):
+        st.info("Try the system with a sample policy document without needing external URLs")
+        if st.button("🎯 Run HackRx Demo", type="primary"):
+            # First load demo document
+            demo_response = make_api_request("/test-upload", {}, "POST")
+            if demo_response and demo_response.get("success"):
+                st.success("✅ Demo document loaded successfully!")
+                
+                # Now run queries
+                demo_questions = [
+                    "What is the grace period for premium payments?",
+                    "What are the main benefits offered?",
+                    "Who is eligible for benefits?"
+                ]
+                
+                request_data = {
+                    "documents": "test_document_url",
+                    "questions": demo_questions
+                }
+                
+                with st.spinner("🔍 Processing demo queries..."):
+                    result = make_api_request("/hackrx/run", request_data, "POST")
+                
+                if result:
+                    st.success("✅ Demo completed successfully!")
+                    st.subheader("📋 Demo Results")
+                    
+                    if "answers" in result:
+                        for i, (question, answer) in enumerate(zip(demo_questions, result["answers"])):
+                            with st.expander(f"Q{i+1}: {question}"):
+                                st.write("**Question:**")
+                                st.write(question)
+                                st.write("**Answer:**")
+                                st.write(answer)
+                else:
+                    st.error("❌ Demo failed - check backend logs")
+            else:
+                st.error("❌ Failed to load demo document")
+    
+    st.divider()
+    
     # Default sample data
     default_url = "https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D"
     
@@ -392,6 +434,25 @@ def url_upload_page():
     
     with col1:
         st.subheader("Upload Document from URL")
+        
+        # Demo section
+        with st.expander("🧪 Try Demo Mode (No External URL Required)", expanded=False):
+            st.info("Click below to test the system with a sample policy document")
+            if st.button("🚀 Load Demo Document", type="primary"):
+                demo_response = make_api_request("/test-upload", {}, "POST")
+                if demo_response and demo_response.get("success"):
+                    st.success(f"✅ {demo_response['message']}")
+                    st.info(f"Document ID: {demo_response.get('document_id')}")
+                    st.info(f"Number of chunks: {demo_response.get('chunks')}")
+                    
+                    # Store the document ID for querying
+                    st.session_state.uploaded_doc_id = demo_response.get('document_id')
+                    st.session_state.show_url_query = True
+                    st.success("💡 Demo document loaded! You can now ask questions below.")
+                else:
+                    st.error("❌ Failed to load demo document")
+        
+        st.divider()
         
         # URL input
         doc_url = st.text_input(
