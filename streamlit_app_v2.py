@@ -19,6 +19,79 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS for better styling
+st.markdown("""
+<style>
+/* Sidebar styling */
+.sidebar .sidebar-content {
+    background-color: #f0f2f6;
+}
+
+/* Navigation radio buttons styling */
+div[role="radiogroup"] label {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    padding: 8px 12px !important;
+    margin: 4px 0 !important;
+    border-radius: 8px !important;
+    background-color: transparent !important;
+    border: 1px solid #e0e0e0 !important;
+    transition: all 0.3s ease !important;
+}
+
+div[role="radiogroup"] label:hover {
+    background-color: #e8f4fd !important;
+    border-color: #1f77b4 !important;
+}
+
+div[role="radiogroup"] label[data-checked="true"] {
+    background-color: #1f77b4 !important;
+    color: white !important;
+    border-color: #1f77b4 !important;
+}
+
+/* Main content styling */
+.main .block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Success/error message styling */
+.stSuccess, .stError, .stInfo, .stWarning {
+    border-radius: 8px !important;
+    border-left: 4px solid !important;
+}
+
+/* Button styling */
+.stButton > button {
+    border-radius: 8px !important;
+    border: none !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Metric styling */
+[data-testid="metric-container"] {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Expander styling */
+.streamlit-expanderHeader {
+    background-color: #f8f9fa !important;
+    border-radius: 8px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 def test_api_connection():
     """Test if the API server is running and accessible"""
     try:
@@ -71,11 +144,15 @@ def main():
     else:
         st.success(f"✅ Connected to FastAPI server at {API_BASE_URL}")
     
-    # Sidebar
-    st.sidebar.title("Navigation")
-    page = st.sidebar.selectbox(
-        "Choose a page:",
-        ["🧪 HackRx API Test", "📁 File Upload", "🔗 URL Upload", "🔍 Query Documents", "📚 Document Management", "📊 System Stats"]
+    # Sidebar with improved styling
+    st.sidebar.markdown("# 🧭 Navigation")
+    st.sidebar.markdown("---")
+    
+    # Enhanced page selection with larger text
+    page = st.sidebar.radio(
+        "",
+        ["🧪 HackRx API Test", "📁 File Upload", "🔗 URL Upload", "🔍 Query Documents", "📚 Document Management", "📊 System Stats"],
+        format_func=lambda x: f"### {x}"
     )
     
     if page == "🧪 HackRx API Test":
@@ -228,32 +305,68 @@ def file_upload_page():
                 if result:
                     if result.get("success"):
                         st.success(f"✅ {result['message']}")
-                        st.info(f"Document ID: {result.get('document_id')}")
-                        st.info(f"Number of chunks: {result.get('chunks')}")
+                        
+                        # Show document details in a nice info box
+                        with st.container():
+                            st.markdown("### 📋 Document Processed Successfully!")
+                            col1, col2, col3 = st.columns(3)
+                            with col1:
+                                st.metric("Document ID", result.get('document_id', 'N/A'))
+                            with col2:
+                                st.metric("Chunks Created", result.get('chunks', 0))
+                            with col3:
+                                st.metric("Status", "✅ Ready")
                         
                         # Option to query immediately
-                        st.subheader("🔍 Ask a Question")
-                        question = st.text_input("What would you like to know about this document?")
-                        if question and st.button("Ask Question"):
+                        st.divider()
+                        st.subheader("🔍 Ask a Question About This Document")
+                        
+                        # Sample questions
+                        st.markdown("**💡 Try these sample questions:**")
+                        sample_questions = [
+                            "What is this document about?",
+                            "What are the key points?",
+                            "What are the main requirements?",
+                            "What are the terms and conditions?"
+                        ]
+                        
+                        selected_sample = st.selectbox("Or choose a sample question:", [""] + sample_questions)
+                        
+                        question = st.text_area(
+                            "Enter your question:",
+                            value=selected_sample if selected_sample else "",
+                            height=100,
+                            placeholder="What would you like to know about this document?"
+                        )
+                        if question and st.button("🔍 Ask Question", type="primary"):
                             query_data = {
                                 "document_id": result.get('document_id'),
                                 "question": question
                             }
-                            with st.spinner("Searching document..."):
+                            with st.spinner("🔍 Analyzing document and generating answer..."):
                                 query_result = make_api_request("/query", query_data, "POST")
                             
                             if query_result:
-                                st.write("**Answer:**")
-                                st.write(query_result.get("answer"))
+                                st.success("✅ Answer generated!")
+                                
+                                # Display answer prominently
+                                st.markdown("### 💬 Answer")
+                                st.markdown(f"**{query_result.get('answer')}**")
+                                
+                                if query_result.get("reasoning"):
+                                    st.info(f"🧠 **Reasoning:** {query_result['reasoning']}")
                                 
                                 if query_result.get("relevant_chunks"):
-                                    with st.expander("📚 Relevant Sections"):
-                                        for chunk in query_result["relevant_chunks"]:
-                                            st.write(f"**Score:** {chunk.get('score', 'N/A')}")
-                                            st.write(chunk.get("text", ""))
-                                            st.write("---")
+                                    with st.expander("📚 Relevant Document Sections", expanded=True):
+                                        for i, chunk in enumerate(query_result["relevant_chunks"]):
+                                            st.write(f"**📄 Section {i+1}** (Relevance: {chunk.get('score', 0):.3f})")
+                                            st.write(f"📝 {chunk.get('text', '')}")
+                                            if i < len(query_result["relevant_chunks"]) - 1:
+                                                st.divider()
+                            else:
+                                st.error("❌ Failed to get answer from the document.")
                     else:
-                        st.error(f"❌ Upload failed: {result.get('error')}")
+                        st.error(f"❌ Upload failed: {result.get('error', 'Unknown error')}")
     
     with col2:
         st.subheader("📊 Upload Status")
@@ -333,7 +446,8 @@ def query_documents_page():
     # Document selection
     doc_options = {}
     for doc in documents:
-        doc_type = "📁 File" if not doc.get("url", "").startswith("http") else "🔗 URL"
+        url = doc.get("url") or ""
+        doc_type = "📁 File" if not url.startswith("http") else "🔗 URL"
         doc_options[doc['id']] = f"{doc_type}: {doc['title']} ({doc.get('chunks', 0)} chunks)"
     
     selected_doc_id = st.selectbox(
@@ -378,27 +492,37 @@ def query_documents_page():
             # Get document details
             selected_doc = next((doc for doc in documents if doc['id'] == selected_doc_id), None)
             
+            if not selected_doc:
+                st.error("Document not found")
+                return
+            
             request_data = {
                 "document_id": selected_doc.get('document_id'),
                 "question": question
             }
             
+            st.info(f"🔍 Querying document: **{selected_doc['title']}**")
+            
             with st.spinner("Searching document and generating answer..."):
                 result = make_api_request("/query", request_data, "POST")
             
             if result:
+                st.success("✅ Answer generated successfully!")
                 st.subheader("💬 Answer")
-                st.write(result["answer"])
+                st.markdown(f"**{result['answer']}**")
                 
                 if result.get("reasoning"):
-                    st.info(f"🧠 Reasoning: {result['reasoning']}")
+                    st.info(f"🧠 **Reasoning:** {result['reasoning']}")
                 
                 if "relevant_chunks" in result and result["relevant_chunks"]:
-                    with st.expander("📚 Relevant Document Sections"):
+                    with st.expander("📚 Relevant Document Sections", expanded=True):
                         for i, chunk in enumerate(result["relevant_chunks"]):
-                            st.write(f"**Section {i+1}** (Score: {chunk.get('score', 'N/A'):.3f})")
-                            st.write(chunk["text"])
-                            st.write("---")
+                            st.write(f"**📄 Section {i+1}** (Relevance Score: {chunk.get('score', 0):.3f})")
+                            st.write(f"📝 {chunk['text']}")
+                            if i < len(result["relevant_chunks"]) - 1:
+                                st.divider()
+            else:
+                st.error("❌ Failed to get answer. Please check the API connection.")
 
 def document_management_page():
     """Document management page"""
@@ -419,7 +543,8 @@ def document_management_page():
     
     with tab1:
         for doc in documents:
-            doc_type = "📁 File Upload" if not doc.get("url", "").startswith("http") else "🔗 URL Document"
+            url = doc.get("url") or ""
+            doc_type = "📁 File Upload" if not (url or "").startswith("http") else "🔗 URL Document"
             
             with st.expander(f"{doc_type}: {doc['title']}"):
                 col1, col2, col3 = st.columns([2, 1, 1])
@@ -499,7 +624,7 @@ def system_stats_page():
             
             # Document type breakdown
             if documents:
-                file_count = sum(1 for doc in documents if not doc.get("url", "").startswith("http"))
+                file_count = sum(1 for doc in documents if not (doc.get("url") or "").startswith("http"))
                 url_count = len(documents) - file_count
                 
                 st.write("**Document Types:**")
@@ -520,7 +645,7 @@ def system_stats_page():
         recent_docs = sorted(documents, key=lambda x: x.get("created_at", ""), reverse=True)[:5]
         
         for doc in recent_docs:
-            doc_type = "📁" if not doc.get("url", "").startswith("http") else "🔗"
+            doc_type = "📁" if not (doc.get("url") or "").startswith("http") else "🔗"
             st.write(f"{doc_type} **{doc['title']}** - {doc.get('chunks', 0)} chunks - {doc.get('created_at', '')}")
 
 if __name__ == "__main__":
