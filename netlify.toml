@@ -1,5 +1,9 @@
 [build]
   functions = "netlify/functions"
+  command = "echo 'Building Netlify functions...'"
+  
+[build.environment]
+  PYTHON_VERSION = "3.11"
   
 [functions]
   node_bundler = "esbuild"
