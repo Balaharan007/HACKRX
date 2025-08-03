@@ -1,0 +1,27 @@
+{
+  "name": "hackrx-document-intelligence",
+  "version": "1.0.0",
+  "description": "HackRx 6.0 Document Intelligence Agent - Netlify Functions Deployment",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "pdf-parse": "^1.1.1"
+  },
+  "engines": {
+    "node": ">=14.x"
+  },
+  "scripts": {
+    "build": "echo 'No build step required for Netlify Functions'",
+    "test": "echo 'Tests will be added in future versions'"
+  },
+  "keywords": [
+    "hackrx",
+    "document-intelligence",
+    "ai",
+    "insurance",
+    "pdf-processing",
+    "netlify-functions"
+  ],
+  "author": "HackRx 6.0 Team",
+  "license": "MIT"
+}

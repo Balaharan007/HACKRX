@@ -1,0 +1,33 @@
+[build]
+  functions = "netlify/functions"
+  
+[functions]
+  node_bundler = "esbuild"
+
+# Redirect the HackRx endpoint to the Netlify function
+[[redirects]]
+  from = "/hackrx/run"
+  to = "/.netlify/functions/hackrx"
+  status = 200
+
+# Handle API routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# CORS headers for all function endpoints
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, Accept"
+    Access-Control-Allow-Methods = "POST, GET, OPTIONS"
+    
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
