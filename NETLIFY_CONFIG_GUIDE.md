@@ -6,7 +6,7 @@
 
 ```
 GEMINI_API_KEY=[Your Google Gemini API Key]
-PINECONE_API_KEY=[Your Pinecone API Key]  
+PINECONE_API_KEY=[Your Pinecone API Key]
 HUGGINGFACE_API_KEY=[Your Hugging Face API Key]
 BEARER_TOKEN=[Your Bearer Token from .env file]
 ```
@@ -23,16 +23,18 @@ NODE_VERSION=18
 ## ❌ Variables to REMOVE from Netlify:
 
 These are for local development only:
+
 - `STREAMLIT_PORT=8501` (Not needed for serverless functions)
-- `API_HOST=0.0.0.0` (Not needed for serverless functions)  
+- `API_HOST=0.0.0.0` (Not needed for serverless functions)
 - `API_PORT=8000` (Not needed for serverless functions)
 - Local database variables (Use production DATABASE_URL instead)
 
 ## ✅ Deploy Contexts:
 
 Your current selection is correct:
+
 - ✅ Production
-- ✅ Deploy Previews  
+- ✅ Deploy Previews
 - ✅ Branch deploys
 - ✅ Local development (Netlify CLI)
 
