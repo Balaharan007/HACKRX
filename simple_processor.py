@@ -94,6 +94,9 @@ class SimpleDocumentProcessor:
     
     def extract_text(self, source: str, is_file_path: bool = False) -> str:
         """Extract text from document URL or file path"""
+        print(f"Processing source: {source}")
+        print(f"Is file path: {is_file_path}")
+        
         if is_file_path:
             if source.lower().endswith('.pdf'):
                 return self.extract_text_from_pdf(source)
@@ -104,26 +107,45 @@ class SimpleDocumentProcessor:
             else:
                 raise Exception("Unsupported file format")
         else:
-            content = self.download_document(source)
-            
-            # Extract file extension from URL (handle query parameters)
-            url_path = source.split('?')[0]  # Remove query parameters
-            
-            if url_path.lower().endswith('.pdf') or 'pdf' in source.lower():
-                return self.extract_text_from_pdf(content)
-            elif url_path.lower().endswith(('.docx', '.doc')) or 'docx' in source.lower() or 'doc' in source.lower():
-                return self.extract_text_from_docx(content)
-            elif url_path.lower().endswith('.txt') or 'txt' in source.lower():
-                return self.extract_text_from_txt(content)
-            else:
-                # Try to detect format from content or assume PDF for Azure blob URLs
-                if b'%PDF' in content[:100] or 'blob.core.windows.net' in source:
+            try:
+                content = self.download_document(source)
+                print(f"Downloaded content size: {len(content)} bytes")
+                print(f"Content header: {content[:50]}")
+                
+                # Extract file extension from URL (handle query parameters)
+                url_path = source.split('?')[0]  # Remove query parameters
+                print(f"URL path without query: {url_path}")
+                
+                # Check for PDF signature
+                is_pdf = b'%PDF' in content[:100] or url_path.lower().endswith('.pdf') or 'pdf' in source.lower()
+                print(f"Is PDF: {is_pdf}")
+                
+                if is_pdf:
                     return self.extract_text_from_pdf(content)
+                elif url_path.lower().endswith(('.docx', '.doc')) or 'docx' in source.lower() or 'doc' in source.lower():
+                    return self.extract_text_from_docx(content)
+                elif url_path.lower().endswith('.txt') or 'txt' in source.lower():
+                    return self.extract_text_from_txt(content)
                 else:
+                    # For Azure blob URLs, try PDF first, then text
+                    if 'blob.core.windows.net' in source:
+                        try:
+                            return self.extract_text_from_pdf(content)
+                        except:
+                            pass
+                    
+                    # Try as text
                     try:
-                        return content.decode('utf-8')
+                        text_content = content.decode('utf-8')
+                        if len(text_content.strip()) > 0:
+                            return text_content
                     except:
-                        raise Exception("Unsupported document format")
+                        pass
+                    
+                    raise Exception(f"Unsupported document format. Content type not recognized from URL: {url_path}")
+            except Exception as e:
+                print(f"Error in extract_text: {str(e)}")
+                raise
     
     def chunk_text(self, text: str, chunk_size: int = 1500, overlap: int = 300) -> List[Dict]:
         """Split text into chunks with metadata"""

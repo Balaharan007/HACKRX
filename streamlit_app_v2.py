@@ -309,6 +309,11 @@ def hackrx_api_test():
                 # Show raw response
                 with st.expander("🔍 Raw API Response"):
                     st.json(result)
+            else:
+                st.error("❌ API request failed. Check the console for details.")
+                st.markdown("**Sample working URLs to test:**")
+                st.code("https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
+                st.code("https://file-examples.com/storage/fe68c1b20e66dbf3c9d8ba3/2017/10/file_example_PDF_1MB.pdf")
     
     with col2:
         if st.button("🔄 Reset"):
@@ -490,7 +495,21 @@ def url_upload_page():
                     st.session_state.uploaded_doc_id = result.get('document_id')
                     st.session_state.show_url_query = True
                 else:
-                    st.error(f"❌ Processing failed: {result.get('error')}")
+                    error_msg = result.get('error', 'Unknown error')
+                    detail_msg = result.get('detail', '')
+                    st.error(f"❌ Processing failed: {error_msg}")
+                    if detail_msg:
+                        st.error(f"Details: {detail_msg}")
+                    
+                    # Show helpful tips for common errors
+                    if "download" in error_msg.lower():
+                        st.info("💡 Tip: Make sure the URL is publicly accessible and points directly to a document")
+                    elif "format" in error_msg.lower():
+                        st.info("💡 Tip: Supported formats are PDF, DOCX, DOC, and TXT files")
+                    
+                    st.markdown("**Sample working URLs to test:**")
+                    st.code("https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
+                    st.code("https://file-examples.com/storage/fe68c1b20e66dbf3c9d8ba3/2017/10/file_example_PDF_1MB.pdf")
         
         # Query functionality - Show after successful upload
         if st.session_state.get('show_url_query') and st.session_state.get('uploaded_doc_id'):
