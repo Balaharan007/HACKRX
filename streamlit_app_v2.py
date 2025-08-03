@@ -19,6 +19,14 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+def test_api_connection():
+    """Test if the API server is running and accessible"""
+    try:
+        response = requests.get(f"{API_BASE_URL}/health", timeout=5)
+        return response.status_code == 200
+    except:
+        return False
+
 def make_api_request(endpoint: str, data: dict = None, method: str = "GET", files=None):
     """Make API request with authentication"""
     headers = {
@@ -50,6 +58,18 @@ def make_api_request(endpoint: str, data: dict = None, method: str = "GET", file
 def main():
     st.title("🤖 HackRx 6.0 - Document Intelligence Agent")
     st.markdown("### AI-powered document analysis with file upload support")
+    
+    # Check API connection
+    if not test_api_connection():
+        st.error("❌ **Cannot connect to FastAPI server!**")
+        st.error(f"Please ensure the server is running at: {API_BASE_URL}")
+        st.info("💡 **To start the server:**")
+        st.code("start_server.bat", language="bash")
+        st.info("Or run manually:")
+        st.code("python -m uvicorn main_final:app --host 0.0.0.0 --port 8000", language="bash")
+        st.stop()
+    else:
+        st.success(f"✅ Connected to FastAPI server at {API_BASE_URL}")
     
     # Sidebar
     st.sidebar.title("Navigation")

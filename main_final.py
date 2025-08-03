@@ -199,7 +199,7 @@ async def upload_file(
         
         # Process document
         result = doc_processor.process_document(
-            source="",
+            source=file.filename,
             is_file_path=False,
             file_content=file_content,
             filename=file.filename
