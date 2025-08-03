@@ -1,0 +1,9 @@
+This is a test policy document.
+
+Grace Period: The grace period for premium payment is 30 days from the due date.
+
+Coverage Limits: The maximum coverage amount is $100,000 per year.
+
+Exclusions: Pre-existing conditions are not covered for the first 12 months.
+
+Contact Information: For claims, call 1-800-POLICY or email claims@insurance.com.
