@@ -181,43 +181,39 @@ def hackrx_api_test():
     
     # Demo mode option
     with st.expander("🚀 Demo Mode (Recommended)", expanded=True):
-        st.info("Try the system with a sample policy document without needing external URLs")
+        st.info("Try the system with a sample policy document using a working URL")
         if st.button("🎯 Run HackRx Demo", type="primary"):
-            # First load demo document
-            demo_response = make_api_request("/test-upload", {}, "POST")
-            if demo_response and demo_response.get("success"):
-                st.success("✅ Demo document loaded successfully!")
+            # Use a working public PDF URL for demo
+            demo_url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+            
+            demo_questions = [
+                "What is this document about?",
+                "What type of document is this?",
+                "What is the main content?"
+            ]
+            
+            request_data = {
+                "documents": demo_url,
+                "questions": demo_questions
+            }
+            
+            with st.spinner("🔍 Processing demo queries..."):
+                result = make_api_request("/hackrx/run", request_data, "POST")
+            
+            if result:
+                st.success("✅ Demo completed successfully!")
+                st.subheader("📋 Demo Results")
                 
-                # Now run queries
-                demo_questions = [
-                    "What is the grace period for premium payments?",
-                    "What are the main benefits offered?",
-                    "Who is eligible for benefits?"
-                ]
-                
-                request_data = {
-                    "documents": "test_document_url",
-                    "questions": demo_questions
-                }
-                
-                with st.spinner("🔍 Processing demo queries..."):
-                    result = make_api_request("/hackrx/run", request_data, "POST")
-                
-                if result:
-                    st.success("✅ Demo completed successfully!")
-                    st.subheader("📋 Demo Results")
-                    
-                    if "answers" in result:
-                        for i, (question, answer) in enumerate(zip(demo_questions, result["answers"])):
-                            with st.expander(f"Q{i+1}: {question}"):
-                                st.write("**Question:**")
-                                st.write(question)
-                                st.write("**Answer:**")
-                                st.write(answer)
-                else:
-                    st.error("❌ Demo failed - check backend logs")
+                if "answers" in result:
+                    for i, (question, answer) in enumerate(zip(demo_questions, result["answers"])):
+                        with st.expander(f"Q{i+1}: {question}"):
+                            st.write("**Question:**")
+                            st.write(question)
+                            st.write("**Answer:**")
+                            st.write(answer)
             else:
-                st.error("❌ Failed to load demo document")
+                st.error("❌ Demo failed - check backend logs")
+                st.info("💡 Try using the manual URL input below with a working document URL")
     
     st.divider()
     
@@ -441,10 +437,20 @@ def url_upload_page():
         st.subheader("Upload Document from URL")
         
         # Demo section
-        with st.expander("🧪 Try Demo Mode (No External URL Required)", expanded=False):
-            st.info("Click below to test the system with a sample policy document")
+        with st.expander("🧪 Try Demo Mode (With Working URL)", expanded=False):
+            st.info("Click below to test the system with a working demo document URL")
             if st.button("🚀 Load Demo Document", type="primary"):
-                demo_response = make_api_request("/test-upload", {}, "POST")
+                # Use a working demo URL
+                demo_url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                
+                request_data = {
+                    "url": demo_url,
+                    "title": "Demo PDF Document"
+                }
+                
+                with st.spinner("Loading demo document..."):
+                    demo_response = make_api_request("/documents/upload-url", request_data, "POST")
+                
                 if demo_response and demo_response.get("success"):
                     st.success(f"✅ {demo_response['message']}")
                     st.info(f"Document ID: {demo_response.get('document_id')}")
@@ -456,6 +462,7 @@ def url_upload_page():
                     st.success("💡 Demo document loaded! You can now ask questions below.")
                 else:
                     st.error("❌ Failed to load demo document")
+                    st.info("💡 Try entering a URL manually below")
         
         st.divider()
         
