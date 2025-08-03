@@ -425,7 +425,7 @@ def url_upload_page():
         st.subheader("📋 Recent URLs")
         documents = make_api_request("/documents")
         if documents:
-            url_docs = [doc for doc in documents if doc.get("url", "").startswith("http")]
+            url_docs = [doc for doc in documents if (doc.get("url") or "").startswith("http")]
             for doc in url_docs[-3:]:  # Show last 3 URL documents
                 st.write(f"📄 {doc.get('title', 'Untitled')[:30]}...")
                 st.caption(f"Chunks: {doc.get('chunks', 0)}")
@@ -552,7 +552,7 @@ def document_management_page():
                 with col1:
                     st.write(f"**ID:** {doc['id']}")
                     st.write(f"**Title:** {doc['title']}")
-                    st.write(f"**Created:** {doc['created_at']}")
+                    st.write(f"**Created:** {doc.get('created_at', 'N/A')}")
                     st.write(f"**Chunks:** {doc.get('chunks', 0)}")
                     st.write(f"**Document ID:** {doc.get('document_id', 'N/A')}")
                 
