@@ -132,6 +132,12 @@ def main():
     st.title("🤖 HackRx 6.0 - Document Intelligence Agent")
     st.markdown("### AI-powered document analysis with file upload support")
     
+    # Initialize session state variables
+    if 'show_url_query' not in st.session_state:
+        st.session_state.show_url_query = False
+    if 'uploaded_doc_id' not in st.session_state:
+        st.session_state.uploaded_doc_id = None
+    
     # Check API connection
     if not test_api_connection():
         st.error("❌ **Cannot connect to FastAPI server!**")
@@ -264,7 +270,7 @@ def hackrx_api_test():
     
     with col2:
         if st.button("🔄 Reset"):
-            st.experimental_rerun()
+            st.rerun()
 
 def file_upload_page():
     """File upload page"""
@@ -418,8 +424,82 @@ def url_upload_page():
                     st.success(f"✅ {result['message']}")
                     st.info(f"Document ID: {result.get('document_id')}")
                     st.info(f"Number of chunks: {result.get('chunks')}")
+                    
+                    # Store the document ID in session state for querying
+                    st.session_state.uploaded_doc_id = result.get('document_id')
+                    st.session_state.show_url_query = True
                 else:
                     st.error(f"❌ Processing failed: {result.get('error')}")
+        
+        # Query functionality - Show after successful upload
+        if st.session_state.get('show_url_query') and st.session_state.get('uploaded_doc_id'):
+            st.markdown("---")
+            st.subheader("🔍 Query This Document")
+            st.markdown("Now you can ask questions about the uploaded document:")
+            
+            # Quick question buttons
+            st.write("**Quick Questions:**")
+            quick_questions = [
+                "What is the purpose of this document?",
+                "What are the main policies?", 
+                "Does this policy apply to all employees?",
+                "What is the effective date?",
+                "Are there medical benefits mentioned?"
+            ]
+            
+            # Display question buttons in rows
+            cols = st.columns(3)
+            selected_quick_question = None
+            
+            for i, question in enumerate(quick_questions):
+                with cols[i % 3]:
+                    if st.button(f"❓ {question[:20]}...", key=f"quick_q_{i}", help=question):
+                        selected_quick_question = question
+            
+            # Custom question input
+            st.write("**Custom Question:**")
+            custom_question = st.text_area(
+                "Enter your own question about the document:",
+                placeholder="Type your question here...",
+                height=80,
+                key="url_custom_question"
+            )
+            
+            # Query button
+            query_question = selected_quick_question or custom_question.strip()
+            
+            if st.button("🚀 Ask Question", type="primary", disabled=not query_question):
+                if query_question:
+                    query_data = {
+                        "question": query_question,
+                        "document_id": st.session_state.uploaded_doc_id
+                    }
+                    
+                    with st.spinner("🔍 Analyzing document and generating answer..."):
+                        query_result = make_api_request("/query", query_data, "POST")
+                    
+                    if query_result:
+                        st.success("✅ Answer generated!")
+                        
+                        # Display answer prominently
+                        st.markdown("### 💬 Answer")
+                        st.markdown(f"**Question:** {query_question}")
+                        st.markdown(f"**Answer:** {query_result.get('answer')}")
+                        
+                        # Show additional details if available
+                        if query_result.get('source_chunks'):
+                            with st.expander("📚 Source Information"):
+                                st.write(f"**Sources:** {len(query_result['source_chunks'])} relevant chunks found")
+                                for i, chunk in enumerate(query_result['source_chunks'][:3]):
+                                    st.write(f"**Chunk {i+1}:** {chunk[:200]}...")
+                    else:
+                        st.error("❌ Failed to get answer. Please try again.")
+            
+            # Reset button
+            if st.button("🔄 Upload Another Document"):
+                st.session_state.show_url_query = False
+                st.session_state.uploaded_doc_id = None
+                st.rerun()
     
     with col2:
         st.subheader("📋 Recent URLs")
@@ -575,7 +655,7 @@ def document_management_page():
                             result = make_api_request(f"/documents/{doc['id']}", method="DELETE")
                             if result:
                                 st.success("Document deleted!")
-                                st.experimental_rerun()
+                                st.rerun()
     
     with tab2:
         # Document statistics
