@@ -48,9 +48,9 @@ GEMINI_API_KEY=[Your API Key]
 PINECONE_API_KEY=[Your API Key]
 HUGGINGFACE_API_KEY=[Your API Key]
 BEARER_TOKEN=[Your Bearer Token]
-GEMINI_MODEL=gemini-2.0-flash-exp
-PINECONE_ENVIRONMENT=gcp-starter
-PINECONE_INDEX_NAME=hackrx-documents
+GEMINI_MODEL=your_model_name
+PINECONE_ENVIRONMENT=your_environment
+PINECONE_INDEX_NAME=your_index_name
 NODE_VERSION=18
 ```
 

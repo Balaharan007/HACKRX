@@ -35,8 +35,8 @@ Render is the best choice for this project because:
 1. Click "New" → "PostgreSQL"
 2. Configure:
    - **Name**: `hackrx-db`
-   - **Database**: `hackrx_db`
-   - **User**: `postgres`
+   - **Database**: `your_database`
+   - **User**: `your_username`
    - **Region**: Choose closest to you
    - **Plan**: Free
 3. Click "Create Database"
@@ -60,7 +60,7 @@ Render is the best choice for this project because:
    PINECONE_API_KEY=your_pinecone_api_key_here
    PINECONE_ENVIRONMENT=your_pinecone_environment_here
    GEMINI_API_KEY=your_gemini_api_key_here
-   GEMINI_MODEL=gemini-2.0-flash-exp
+   GEMINI_MODEL=your-model-name
    HUGGINGFACE_API_KEY=your_huggingface_api_key_here
    DATABASE_URL=[Your Render PostgreSQL Internal URL]
    API_HOST=0.0.0.0
@@ -95,7 +95,7 @@ Test with curl:
 
 ```bash
 curl -X POST "https://hackrx-api.onrender.com/hackrx/run" \
-  -H "Authorization: Bearer 96551ec397634df93a1a2212b9b798324340321ef3c785ce9f4593c92d8f1544" \
+  -H "Authorization: Bearer YOUR_BEARER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "documents": "https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D",

@@ -42,10 +42,9 @@ exports.handler = async (event, context) => {
     }
 
     const token = authHeader.split(" ")[1];
-    if (
-      token !==
-      "96551ec397634df93a1a2212b9b798324340321ef3c785ce9f4593c92d8f1544"
-    ) {
+    const expectedToken = process.env.BEARER_TOKEN;
+
+    if (!expectedToken || token !== expectedToken) {
       return {
         statusCode: 401,
         headers: { "Content-Type": "application/json" },

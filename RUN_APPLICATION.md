@@ -77,7 +77,7 @@ import requests
 
 # Upload file
 files = {'file': open('MAHENDRAVIKAS_RESUME.pdf', 'rb')}
-headers = {'Authorization': 'Bearer 96551ec397634df93a1a2212b9b798324340321ef3c785ce9f4593c92d8f1544'}
+headers = {'Authorization': 'Bearer YOUR_BEARER_TOKEN'}
 
 upload_resp = requests.post('http://localhost:8000/documents/upload-file', headers=headers, files=files)
 print('Upload:', upload_resp.json())
@@ -103,7 +103,7 @@ import requests
 import json
 
 headers = {
-    'Authorization': 'Bearer 96551ec397634df93a1a2212b9b798324340321ef3c785ce9f4593c92d8f1544',
+    'Authorization': 'Bearer YOUR_BEARER_TOKEN',
     'Content-Type': 'application/json'
 }
 
@@ -139,7 +139,7 @@ print('HackRx Response:', response.json())
 All endpoints require Bearer token:
 
 ```
-Authorization: Bearer 96551ec397634df93a1a2212b9b798324340321ef3c785ce9f4593c92d8f1544
+Authorization: Bearer YOUR_BEARER_TOKEN
 ```
 
 ## 🛠 Troubleshooting

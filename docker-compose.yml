@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:936141@db:5432/hackrx_db
+      - DATABASE_URL=postgresql://postgres:your_password@db:5432/your_database
     depends_on:
       - db
     volumes:
@@ -25,9 +25,9 @@ services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_DB: hackrx_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 936141
+      POSTGRES_DB: your_database
+      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: your_password
     ports:
       - "5432:5432"
     volumes:

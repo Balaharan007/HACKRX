@@ -409,7 +409,7 @@ async def demo_endpoint():
         },
         "curl_command": """
 curl -X POST "http://localhost:8000/hackrx/run" \\
-  -H "Authorization: Bearer 96551ec397634df93a1a2212b9b798324340321ef3c785ce9f4593c92d8f1544" \\
+  -H "Authorization: Bearer YOUR_BEARER_TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"documents": "URL", "questions": ["QUESTION"]}'
         """,
