@@ -1,0 +1,6 @@
+# HackRx API Endpoint Redirects
+/hackrx/run    /.netlify/functions/hackrx    200
+/api/*         /.netlify/functions/:splat    200
+
+# Fallback for SPA (if needed)
+/*             /index.html                   200

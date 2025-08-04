@@ -1,5 +1,6 @@
 [build]
   functions = "netlify/functions"
+  publish = "."
   command = "echo 'Building Netlify functions...'"
   
 [build.environment]
