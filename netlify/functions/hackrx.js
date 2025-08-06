@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 
+// HackRx 6.0 Document Intelligence Agent - Fixed Version
 exports.handler = async (event, context) => {
   // Handle CORS preflight
   if (event.httpMethod === "OPTIONS") {
